@@ -24,9 +24,6 @@ def main():
     m = x.size
     x = x[np.newaxis].T
     y = y[np.newaxis].T
-    theta = np.array([0,0],dtype='float64')
-
-
     # to treat x0 as a feature, we add it to the x matrix, since x0=1 by default, we create a vector
     # filled with ones and add it to the x matrix
     x0FeatureColumn = np.ones((m, 1))
@@ -39,9 +36,12 @@ def main():
     iterations = 1500  # number of iterations
     alpha = 0.0001 # learning rate
 
+    print("Shae of theta: " + str(theta.shape))
+
     lr = LinearRegression(theta,x,y)
 
     for i in range(iterations):
+        print("Current cost is " + str(lr.J()))
         lr.gradientDescent(alpha)
 
     hypothesisSolutions = np.empty((m,1), dtype='float64')
@@ -50,6 +50,7 @@ def main():
 
     print("Theta 0 is: " + str(theta[0]))
     print("Theta 1 is: " + str(theta[1]))
+    lr.drawCostFunction()
 
 #    plt.scatter(x, y, label="test scatter plot", marker="x")
 #    plt.xlabel('x')
