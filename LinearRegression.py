@@ -10,20 +10,18 @@ class LinearRegression(object):
         self.thetasVector = thetasVector
         self.featuresMatrix = featuresMatrix
         self.originalAnswers = originalAnswers
+        self.n = thetasVector.size  # number of features
+        self.m = originalAnswers.size  # number of training examples
 
-    def hypothesis(self, featuresVector, localTheta=None):
+    def hypothesis(self, featuresVector):
         """
         calculates the predicted answer. Both arguments have to be a vector
         :param featuresVector: a vector with feature values
         :return: returns predicted answer
         """
-        if localTheta is None:
-            result = np.dot(self.thetasVector, featuresVector)
-        else:
-            result = np.dot(localTheta, featuresVector)
-        return result
+        return np.dot(self.thetasVector, featuresVector)
 
-    def J(self, localTheta=None):
+    def J(self):
         """
         calculates the cost function J
         :param localTheta: this will be entered to hypothesis method as an argument
@@ -32,10 +30,9 @@ class LinearRegression(object):
         m = self.featuresMatrix.shape[0]
         sumOfSerie = 0
         for i in range(m):
-            sumOfSerie += \
-                ((self.hypothesis(self.featuresMatrix[i, :], localTheta=localTheta) - self.originalAnswers[i]) ** 2)[0]
+            sumOfSerie += ((self.hypothesis(self.featuresMatrix[i, :]) - self.originalAnswers[i]) ** 2)
 
-        return (1 / 2 * m) * sumOfSerie
+        return (1 / (2 * m)) * sumOfSerie
 
     def drawCostFunction(self):
         fig = plt.figure()
@@ -48,7 +45,7 @@ class LinearRegression(object):
             localTheta = np.array([theta1[i], theta0[i]])
             print("LocalTheta shape: " + str(localTheta.shape))
             print("Object's theta shape: " + str(self.thetasVector.shape))
-            z[i] = self.J(localTheta)
+            z[i] = self.J()
 
         theta0, theta1 = np.meshgrid(theta0, theta1)
 
@@ -63,18 +60,24 @@ class LinearRegression(object):
 
         plt.show()
 
+    def gradientDescent(self, alpha, iterations=1500):
 
-    def gradientDescent(self, alpha):
-        m, n = self.featuresMatrix.shape
-        nThetas = self.thetasVector.size
-
+        numberOfThetas = self.n
+        previousCost = 999999999999999
         sumOfSerie = 0
-        for sub in range(nThetas):  # nThetas = number of thetas
-            for super in range(m):  # for m data samples
-                sumOfSerie += \
-                    ((self.hypothesis(featuresVector=self.featuresMatrix[super, :]) - self.originalAnswers[super]) *
-                     self.featuresMatrix[
-                         super, sub])[0]
+        for i in range(iterations):
+            for sub in range(numberOfThetas):
+                for _super in range(self.n):
+                    sumOfSerie += (self.hypothesis(self.featuresMatrix[_super, :]) - self.originalAnswers[_super]) * \
+                                  self.featuresMatrix[sub, _super]
 
-            self.thetasVector[sub] = self.thetasVector[sub] - alpha * sumOfSerie
-            sumOfSerie = 0
+                self.thetasVector[sub] -= alpha * (1 / self.m) * sumOfSerie
+                sumOfSerie = 0
+            currentCost = self.J()
+            difference = previousCost - currentCost
+            print("Difference: " + str(previousCost - currentCost))
+            if difference < 0.00000001 and difference > 0:
+                break
+            previousCost = currentCost
+
+
