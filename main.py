@@ -25,7 +25,7 @@ def testExample():
     n = x.shape[1]
     theta  = np.zeros((n,))
     lr = LinearRegression(theta,x,y)
-    alpha = 0.1
+    alpha = 0.001
     iterations = 20000
     lr.gradientDescent(alpha,iterations)
     print("theta0: " + str(theta[0]))
@@ -46,29 +46,38 @@ def main():
     n = x.shape[1]
 
     theta = np.zeros((n,))
-
-    for _super in range(x.shape[1]):  # _super = superscript = column number
-        currentFeatures = x[:, _super]
+    storedStds, storedMeans = [], []
+    for sub in range(x.shape[1]):  # sub = subscript = column number = feature number
+        currentFeatures = x[:, sub]
         mean = currentFeatures.mean()
         std = currentFeatures.std()
+        storedMeans.append(mean)
+        storedStds.append(std)
         if std == 0: # avoids division by zero and also avoids applying feature normalization to x0, which we normally don't
             continue
-        x[:, _super] = (x[:, _super] - mean) / std
+        x[:, sub] = (x[:, sub] - mean) / std
 
 
 
-    iterations = 30000  # number of iterations
-    alpha = 0.001
+    iterations = 3000  # number of iterations
+    alpha = 0.01
     # learning rate
     lr = LinearRegression(theta,x,y)
     lr.gradientDescent(alpha, iterations)
-
-    print(lr.hypothesis([1,1650.,3]))
-
-
-
+    print("Theta 0: " + str(theta[0]))
+    print("Theta 1: " + str(theta[1]))
+    print("Theta 2: " + str(theta[2]))
 
 
+    testValues = np.array([[1,1650,3]], dtype=float)
+
+    #normalize it:
+    for i in range(1,testValues.size):
+        testValues[0,i] = (testValues[0,i]-storedMeans[i])/storedStds[i]
+
+    print(testValues)
+    print(testValues.shape)
+    print(lr.hypothesis(testValues[0,:]))
 
 
 

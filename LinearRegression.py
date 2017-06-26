@@ -6,20 +6,23 @@ import numpy as np
 
 
 class LinearRegression(object):
-    def __init__(self, thetasVector, featuresMatrix, originalAnswers):
-        self.thetasVector = thetasVector
-        self.featuresMatrix = featuresMatrix
-        self.originalAnswers = originalAnswers
-        self.n = thetasVector.size  # number of features
-        self.m = originalAnswers.size  # number of training examples
+    def __init__(self, theta, x, y):
+        self.theta = theta
+        self.x = x
+        self.y = y
+        self.n = theta.size  # number of features
+        self.m = y.size  # number of training examples
 
-    def hypothesis(self, featuresVector):
+    def hypothesis(self, featuresVector, currentTheta = None):
         """
         calculates the predicted answer. Both arguments have to be a vector
         :param featuresVector: a vector with feature values
         :return: returns predicted answer
         """
-        return np.dot(self.thetasVector, featuresVector)
+        if currentTheta is not None:
+            return np.dot(currentTheta, featuresVector)
+        else:
+            return np.dot(self.theta, featuresVector)
 
     def J(self):
         """
@@ -27,10 +30,10 @@ class LinearRegression(object):
         :param localTheta: this will be entered to hypothesis method as an argument
         :return: returns the cost as ndarray
         """
-        m = self.featuresMatrix.shape[0]
+        m = self.x.shape[0]
         sumOfSerie = 0
         for i in range(m):
-            sumOfSerie += ((self.hypothesis(self.featuresMatrix[i, :]) - self.originalAnswers[i]) ** 2)
+            sumOfSerie += ((self.hypothesis(self.x[i, :]) - self.y[i]) ** 2)
 
         return (1 / (2 * m)) * sumOfSerie
 
@@ -44,7 +47,7 @@ class LinearRegression(object):
         for i in range(z.size):
             localTheta = np.array([theta1[i], theta0[i]])
             print("LocalTheta shape: " + str(localTheta.shape))
-            print("Object's theta shape: " + str(self.thetasVector.shape))
+            print("Object's theta shape: " + str(self.theta.shape))
             z[i] = self.J()
 
         theta0, theta1 = np.meshgrid(theta0, theta1)
@@ -61,23 +64,20 @@ class LinearRegression(object):
         plt.show()
 
     def gradientDescent(self, alpha, iterations=1500):
-
         numberOfThetas = self.n
-        previousCost = 999999999999999
+        previousCost = 0
         sumOfSerie = 0
         for i in range(iterations):
+            currentTheta = self.theta.copy()
             for sub in range(numberOfThetas):
-                for _super in range(self.n):
-                    sumOfSerie += (self.hypothesis(self.featuresMatrix[_super, :]) - self.originalAnswers[_super]) * \
-                                  self.featuresMatrix[sub, _super]
-
-                self.thetasVector[sub] -= alpha * (1 / self.m) * sumOfSerie
+                for _super in range(self.m):
+                    sumOfSerie += (self.hypothesis(self.x[_super, :], currentTheta = currentTheta) - self.y[_super]) * self.x[_super, sub]
+                self.theta[sub] -= (alpha / self.m) * sumOfSerie
                 sumOfSerie = 0
             currentCost = self.J()
+            print("Current cost: " + str(currentCost))
             difference = previousCost - currentCost
-            print("Difference: " + str(previousCost - currentCost))
-            if difference < 0.00000001 and difference > 0:
+            #print("Difference: " + str(previousCost - currentCost))
+            if abs(difference) < 0.000001:
                 break
             previousCost = currentCost
-
-
