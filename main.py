@@ -63,11 +63,10 @@ def main():
     alpha = 0.01
     # learning rate
     lr = LinearRegression(theta,x,y)
-    lr.gradientDescent(alpha, iterations)
+    lr.gradientDescentTillConvergence(alpha)
     print("Theta 0: " + str(theta[0]))
     print("Theta 1: " + str(theta[1]))
     print("Theta 2: " + str(theta[2]))
-
 
     testValues = np.array([[1,1650,3]], dtype=float)
 
@@ -79,7 +78,7 @@ def main():
     print(testValues.shape)
     print(lr.hypothesis(testValues[0,:]))
 
-
+    lr.drawConvergence() # draws convergence
 
 if __name__ == "__main__":
 

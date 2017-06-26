@@ -39,35 +39,36 @@ class LinearRegression(object):
 
     def drawCostFunction(self):
         fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        theta0 = np.linspace(0, 2, num=10)
-        theta1 = np.linspace(0, 2, num=10)
-        print(theta1.size)
-        z = np.empty(theta1.size)
-        for i in range(z.size):
-            localTheta = np.array([theta1[i], theta0[i]])
-            print("LocalTheta shape: " + str(localTheta.shape))
-            print("Object's theta shape: " + str(self.theta.shape))
-            z[i] = self.J()
+        axes = fig.add_subplot(1,1,1, projection='3d')
+        theta0 = np.arange(-10,15,5)
+        theta1 = np.arange(-1,5,1)
+        theta0, theta1 = np.meshgrid(theta0,theta1)
+        costsList = []
+        for j in range(theta0.shape[1]):
+            for i in range(theta0.shape[0]):
+                currentTheta = np.array([theta0[i,j], theta1[i,j]])
 
-        theta0, theta1 = np.meshgrid(theta0, theta1)
 
-        # plot the surface.
-        surf = ax.plot_surface(theta0, theta1, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
-        # Customize the z axis.
-        #        ax.zaxis.set_major_locator(LinearLocator(10))
-        #        ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-        #        Add a color bar which maps values to colors.
-        fig.colorbar(surf, shrink=0.5, aspect=5)
+            m = self.x.shape[0]
+            sumOfSerie = 0
+            for i in range(m):
+                sumOfSerie += ((self.hypothesis(self.x[i, :],currentTheta) - self.y[i]) ** 2)
 
+            currentCost =  (1 / (2 * m)) * sumOfSerie
+            costsList.append(currentCost)
+
+        axes.plot_surface(theta0,theta1,  costsList)
         plt.show()
 
-    def gradientDescent(self, alpha, iterations=1500):
+
+
+
+    def gradientDescentTillConvergence(self, alpha):
         numberOfThetas = self.n
         previousCost = 0
         sumOfSerie = 0
-        for i in range(iterations):
+        while True:
             currentTheta = self.theta.copy()
             for sub in range(numberOfThetas):
                 for _super in range(self.m):
@@ -81,3 +82,54 @@ class LinearRegression(object):
             if abs(difference) < 0.000001:
                 break
             previousCost = currentCost
+
+
+
+
+
+
+
+    def gradientDescent(self, alpha):
+        numberOfThetas = self.n
+        sumOfSerie = 0
+        currentTheta = self.theta.copy()
+        for sub in range(numberOfThetas):
+            for _super in range(self.m):
+                sumOfSerie += (self.hypothesis(self.x[_super, :], currentTheta = currentTheta) - self.y[_super]) * self.x[_super, sub]
+            self.theta[sub] -= (alpha / self.m) * sumOfSerie
+            sumOfSerie = 0
+
+    def drawConvergence(self, iterations = 1500):
+        costs = np.empty((iterations,))
+        alpha = 0.01
+        for i in range(iterations):
+            self.gradientDescent(alpha)
+            currentCost =  self.J()
+            costs[i] = currentCost
+
+        fig, axes = plt.subplots()
+        axes.plot(np.arange(iterations), costs)
+        axes.set_xlabel("iterations")
+        axes.set_ylabel("cost")
+
+
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
